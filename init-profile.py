@@ -36,6 +36,14 @@ REPO_NAME = "Liam-ai-personal-profile"
 REPO_DESC = "My AI personal profile: who I am and how I want AI to talk to me."
 API = "https://api.github.com"
 
+# 已发布仓库地址（2026-11-14 建仓成功、匿名回读验收通过）。
+# 固化为模板默认值：这样以后重跑 `--force` 重建，README 不会把真实链接退回占位符。
+PUBLISHED_OWNER = "Liam801123"
+PUBLISHED_BRANCH = "main"
+DEFAULT_REPO_URL = "https://github.com/{}/{}".format(PUBLISHED_OWNER, REPO_NAME)
+DEFAULT_RAW_ABOUT = "https://raw.githubusercontent.com/{}/{}/{}/about-me.md".format(PUBLISHED_OWNER, REPO_NAME, PUBLISHED_BRANCH)
+DEFAULT_RAW_STYLE = "https://raw.githubusercontent.com/{}/{}/{}/writing-style.md".format(PUBLISHED_OWNER, REPO_NAME, PUBLISHED_BRANCH)
+
 # ---------------------------------------------------------------------------
 # 模板一：about-me.md（个人基础信息 + 使用习惯）
 # ---------------------------------------------------------------------------
@@ -184,9 +192,9 @@ WRITING_STYLE = r"""# writing-style.md — 我的表达风格与偏好规则
 """
 
 # ---------------------------------------------------------------------------
-# 仓库首页 / 使用说明（{{...}} 占位符在 --publish 成功后自动替换为真实地址）
+# 仓库首页 / 使用说明（占位符默认填已发布地址；--publish 时按当前账号再动态计算一次）
 # ---------------------------------------------------------------------------
-README = r"""# Liam-ai-personal-profile
+README_TEMPLATE = r"""# Liam-ai-personal-profile
 
 我的 AI 个人档案。换任何 AI、开任何新会话前，把下面两个链接（或两份文件的全文）发给对方，它就能立刻按我的习惯工作，不用重新磨合。
 
@@ -214,7 +222,7 @@ README = r"""# Liam-ai-personal-profile
 
 ## 离线用法（零门槛，推荐先用这个）
 
-打开 `ai-profile-paste.txt`，全选复制，粘贴到新会话的第一条消息即可：里面已经写好给 AI 的开场白，并附上两份档案全文。不需要账号、令牌或任何配置。
+打开 `ai-profile-paste.txt`，全选复制，粘贴到新会话的第一条消息即可：里面已经写好给 AI 的开场白、两份档案全文，以及可读取最新版的公开链接。不需要账号、令牌或任何配置。
 链接方式更省事：raw 链接永久指向 main 分支最新版本。改完两份 md 后重跑 `python init-profile.py --force`，粘贴包会同步更新。
 
 ## 维护
@@ -236,6 +244,11 @@ README = r"""# Liam-ai-personal-profile
 | `.gitignore` | 排除 Python 编译缓存 |
 """
 
+README = (README_TEMPLATE
+          .replace("{{REPO_URL}}", DEFAULT_REPO_URL)
+          .replace("{{RAW_ABOUT}}", DEFAULT_RAW_ABOUT)
+          .replace("{{RAW_STYLE}}", DEFAULT_RAW_STYLE))
+
 FILES = {
     "about-me.md": ABOUT_ME,
     "writing-style.md": WRITING_STYLE,
@@ -246,7 +259,11 @@ FILES = {
 # ---------------------------------------------------------------------------
 # 派生文件：一次粘贴版（开场白 + 两份档案全文），开新对话时全选复制即可
 # ---------------------------------------------------------------------------
-PASTE_HEAD = "下面两份文件是我的长期个人档案。请完整阅读，并在本次对话中始终按其中的偏好与规则回应我；已写明的内容不要反复问我。\n\n"
+PASTE_HEAD = (
+    "下面两份文件是我的长期个人档案。请完整阅读，并在本次对话中始终按其中的偏好与规则回应我；已写明的内容不要反复问我。\n"
+    "公开原件（如需读取最新版本可直接访问）：\n"
+    "- {}\n- {}\n\n".format(DEFAULT_RAW_ABOUT, DEFAULT_RAW_STYLE)
+)
 PASTE_SEP1 = "\n\n===== 文件 1 / about-me.md =====\n\n"
 PASTE_SEP2 = "\n\n===== 文件 2 / writing-style.md =====\n\n"
 PASTE_TAIL = "\n\n===== 档案结束 =====\n\n（若上述内容有缺失或看不懂，请直接告诉我，不要自行猜测我的偏好。）\n"
